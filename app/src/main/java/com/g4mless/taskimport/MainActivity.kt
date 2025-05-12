@@ -85,7 +85,6 @@ fun MainAppNavigationHost() {
     }
     BackHandler(enabled = showVerifyScreen) {
         showVerifyScreen = false // Kembali dari Verify ke Main
-        // authViewModel.signOut() // Opsional: Logout jika user back dari layar verifikasi
     }
 
     LaunchedEffect(authResult, currentUser, isEmailVerified) {
@@ -100,9 +99,6 @@ fun MainAppNavigationHost() {
                     showVerifyScreen = true
                     authViewModel.clearAuthResult()
                 }
-            }
-            if (!result.success) {
-                // authViewModel.clearAuthResult() // Biarkan AuthScreen yg clear
             }
         }
 
@@ -257,45 +253,50 @@ fun TaskItem(
         5 -> taskColor = Color.Magenta.copy(alpha = 0.3f)
     }
 
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (taskColor != Color.Unspecified) taskColor else CardDefaults.cardColors().containerColor
-        )
+    Box(
+        modifier = modifier.fillMaxWidth(),
+        contentAlignment = Alignment.Center
     ) {
-        Row(
-            modifier = Modifier
+        Card(
+            modifier = modifier
+                .widthIn(max = 600.dp)
                 .fillMaxWidth()
-                .defaultMinSize(minHeight = 90.dp)
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Checkbox(
-                checked = task.isCompleted,
-                onCheckedChange = { onToggleComplete() },
-                modifier = Modifier.padding(end = 8.dp)
+                .padding(vertical = 4.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = if (taskColor != Color.Unspecified) taskColor else CardDefaults.cardColors().containerColor
             )
-            Column(modifier = Modifier.weight(1f)) {
-                SelectionContainer {
-                    Text(task.name, style = MaterialTheme.typography.bodyLarge, lineHeight = 19.sp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .defaultMinSize(minHeight = 90.dp)
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Checkbox(
+                    checked = task.isCompleted,
+                    onCheckedChange = { onToggleComplete() },
+                    modifier = Modifier.padding(end = 8.dp)
+                )
+                Column(modifier = Modifier.weight(1f)) {
+                    SelectionContainer {
+                        Text(task.name, style = MaterialTheme.typography.bodyLarge, lineHeight = 19.sp)
+                    }
+                    Text("Importance: ${task.importance}", style = MaterialTheme.typography.bodySmall)
                 }
-                Text("Importance: ${task.importance}", style = MaterialTheme.typography.bodySmall)
-            }
-            IconButton(onClick = onEdit) {
-                Icon(Icons.Default.Edit, contentDescription = "Edit Task")
-            }
-            IconButton(onClick = onDelete) {
-                Icon(Icons.Default.Delete, contentDescription = "Delete Task")
+                IconButton(onClick = onEdit) {
+                    Icon(Icons.Default.Edit, contentDescription = "Edit Task")
+                }
+                IconButton(onClick = onDelete) {
+                    Icon(Icons.Default.Delete, contentDescription = "Delete Task")
+                }
             }
         }
     }
+
 }
 
-// --- Composable untuk Dialog Tambah/Edit Tugas ---
-// (Kode ini tidak berubah dari versi terakhir Anda)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTaskDialog(
