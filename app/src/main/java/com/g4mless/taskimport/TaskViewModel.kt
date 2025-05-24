@@ -70,7 +70,6 @@ class TaskViewModel(application: Application) : ViewModel() {
     val customImportanceColors: StateFlow<Map<Int, String?>> = _customImportanceColors.asStateFlow()
 
     init {
-        // Muat data awal dari DataStore
         viewModelScope.launch {
             loadTasksFromDataStore(appContext).collect { taskList ->
                 if (!areTaskListsEqual(_tasks.value, taskList)) {
@@ -78,13 +77,11 @@ class TaskViewModel(application: Application) : ViewModel() {
                 }
             }
         }
-        // --- Muat Warna Kustom ---
         viewModelScope.launch {
             loadCustomColors(appContext).collect { colorMap ->
                 _customImportanceColors.value = colorMap
             }
         }
-        // ------------------------
         setupFirestoreListenerBasedOnAuth()
     }
 
@@ -100,9 +97,8 @@ class TaskViewModel(application: Application) : ViewModel() {
                 )
             }
             .catch { exception ->
-                // Tangani error saat membaca preferensi
                 exception.printStackTrace()
-                emit(emptyMap()) // Kembalikan map kosong jika error
+                emit(emptyMap())
             }
     }
 
@@ -177,7 +173,7 @@ class TaskViewModel(application: Application) : ViewModel() {
     private fun startFirestoreListener() {
         stopFirestoreListener()
 
-        val collectionRef = getUserTasksCollection() ?: return // Keluar jika tidak login
+        val collectionRef = getUserTasksCollection() ?: return
 
         firestoreListener = collectionRef.addSnapshotListener { snapshots, error ->
             if (error != null) {
@@ -231,7 +227,7 @@ class TaskViewModel(application: Application) : ViewModel() {
     }
 
     private fun stopFirestoreListener() {
-        firestoreListener?.remove() // Hapus listener dari Firestore
+        firestoreListener?.remove()
         firestoreListener = null
         println("Firestore Listener stopped.")
     }
@@ -257,7 +253,7 @@ class TaskViewModel(application: Application) : ViewModel() {
             saveTasksToDataStore(appContext, newList)
 
             getUserTasksCollection()?.document(newTask.id.toString())?.set(newTask)
-                ?.addOnSuccessListener { println("Firestore: Task ${newTask.id} added.") } // Log sukses
+                ?.addOnSuccessListener { println("Firestore: Task ${newTask.id} added.") }
                 ?.addOnFailureListener { e -> println("Firestore Error adding task ${newTask.id}: ${e.message}") } // Log error
         }
     }
@@ -291,11 +287,9 @@ class TaskViewModel(application: Application) : ViewModel() {
             val currentList = _tasks.value
             val newList = currentList.filter { it.id != taskToDelete.id }
 
-            // 1. Update StateFlow & Simpan Lokal (DataStore)
             _tasks.value = newList
             saveTasksToDataStore(appContext, newList)
 
-            // 2. Hapus dari Firestore jika user login
             getUserTasksCollection()?.document(taskToDelete.id.toString())?.delete()
                 ?.addOnSuccessListener { println("Firestore: Task ${taskToDelete.id} deleted.") }
                 ?.addOnFailureListener { e -> println("Firestore Error deleting task ${taskToDelete.id}: ${e.message}") }
@@ -313,13 +307,11 @@ class TaskViewModel(application: Application) : ViewModel() {
                 } else {
                     task
                 }
-            } // Tidak perlu sort ulang
+            }
 
-            // 1. Update StateFlow & Simpan Lokal (DataStore)
             _tasks.value = newList
             saveTasksToDataStore(appContext, newList)
 
-            // 2. Simpan ke Firestore jika user login (gunakan merge untuk update field isCompleted)
             updatedTask?.let { taskToSync ->
                 getUserTasksCollection()?.document(taskToSync.id.toString())?.set(taskToSync, SetOptions.merge())
                     ?.addOnSuccessListener { println("Firestore: Task ${taskToSync.id} toggled.") }
@@ -338,13 +330,11 @@ class TaskViewModel(application: Application) : ViewModel() {
             val tasksToKeep = currentList.filter { !it.isCompleted }
             val tasksToDelete = currentList.filter { it.isCompleted }
 
-            if (tasksToDelete.isEmpty()) return@launch // Tidak ada yang perlu dihapus
+            if (tasksToDelete.isEmpty()) return@launch
 
-            // 1. Update StateFlow & Simpan Lokal (DataStore)
             _tasks.value = tasksToKeep
             saveTasksToDataStore(appContext, tasksToKeep)
 
-            // 2. Hapus dari Firestore jika user login (gunakan batch write)
             val collectionRef = getUserTasksCollection()
             if (collectionRef != null) {
                 val batch = db.batch()
@@ -368,11 +358,9 @@ class TaskViewModel(application: Application) : ViewModel() {
 
             val emptyList = emptyList<Task>()
 
-            // 1. Update StateFlow & Simpan Lokal (DataStore)
             _tasks.value = emptyList
             saveTasksToDataStore(appContext, emptyList)
 
-            // 2. Hapus dari Firestore jika user login (gunakan batch write)
             val collectionRef = getUserTasksCollection()
             if (collectionRef != null) {
                 val batch = db.batch()
@@ -400,7 +388,6 @@ class TaskViewModel(application: Application) : ViewModel() {
         }
     }
 
-    // Nama diubah agar jelas ini untuk lokal
     private fun loadTasksFromDataStore(context: Context): Flow<List<Task>> {
         return context.dataStore.data
             .map { prefs ->

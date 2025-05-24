@@ -27,32 +27,27 @@ import java.util.Date
 import java.util.Locale
 import androidx.compose.foundation.verticalScroll
 
-// --- Composable untuk Layar Settings ---
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
-    taskViewModel: TaskViewModel, // Terima TaskViewModel
-    authViewModel: AuthViewModel = viewModel(), // Dapatkan AuthViewModel
-    onNavigateBack: () -> Unit, // Lambda untuk kembali
-    onNavigateToAuth: () -> Unit // <-- Parameter baru untuk navigasi ke AuthScreen
+    taskViewModel: TaskViewModel,
+    authViewModel: AuthViewModel = viewModel(),
+    onNavigateBack: () -> Unit,
+    onNavigateToAuth: () -> Unit
 ) {
-    // State untuk dialog konfirmasi
     var showClearCompletedDialog by remember { mutableStateOf(false) }
     var showClearAllDialog by remember { mutableStateOf(false) }
     var showImportConfirmDialog by remember { mutableStateOf<Uri?>(null) }
-    var importFileType by remember { mutableStateOf("") } // Hanya JSON
+    var importFileType by remember { mutableStateOf("") }
     val scrollState = rememberScrollState()
 
-    // Amati status login dari AuthViewModel
     val currentUser by authViewModel.currentUser.collectAsStateWithLifecycle()
 
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
-    // Amati hasil operasi dari TaskViewModel (untuk clear, import, export)
     val operationResult by taskViewModel.operationResult.collectAsStateWithLifecycle()
 
-    // Tampilkan Snackbar saat ada hasil operasi baru dari TaskViewModel
     LaunchedEffect(operationResult) {
         operationResult?.let { message ->
             scope.launch { snackbarHostState.showSnackbar(message = message) }
@@ -60,9 +55,6 @@ fun SettingsScreen(
         }
     }
 
-    // --- Activity Result Launchers (Hanya JSON) ---
-
-    // Launcher untuk EXPORT JSON
     val createJsonFileLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("application/json"),
         onResult = { uri: Uri? ->
@@ -92,15 +84,14 @@ fun SettingsScreen(
         }
     )
 
-    // Launcher untuk IMPORT JSON
     val openFileLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument(),
         onResult = { uri: Uri? ->
             uri?.let { sourceUri ->
                 val type = context.contentResolver.getType(sourceUri)
                 if (type == "application/json" || sourceUri.path?.endsWith(".json", ignoreCase = true) == true) {
-                    importFileType = "json" // Set tipe (meski hanya JSON)
-                    showImportConfirmDialog = sourceUri // Tampilkan dialog konfirmasi
+                    importFileType = "json"
+                    showImportConfirmDialog = sourceUri
                 } else {
                     scope.launch{ snackbarHostState.showSnackbar("Unsupported file type (JSON only).") }
                 }
@@ -108,7 +99,6 @@ fun SettingsScreen(
         }
     )
 
-    // --- UI SettingsScreen ---
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
@@ -129,18 +119,16 @@ fun SettingsScreen(
                 .fillMaxSize()
                 .verticalScroll(scrollState)
         ) {
-            // --- Bagian Akun / Autentikasi ---
             Text("Account", style = MaterialTheme.typography.titleMedium)
             Spacer(modifier = Modifier.height(8.dp))
 
             if (currentUser == null) {
-                // Tampilan jika belum login
                 Card(modifier = Modifier.fillMaxWidth()) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text("Login or Sign Up to sync your tasks across devices.", style = MaterialTheme.typography.bodyMedium)
                         Spacer(modifier = Modifier.height(16.dp))
                         Button(
-                            onClick = { onNavigateToAuth() }, // <-- Panggil lambda navigasi
+                            onClick = { onNavigateToAuth() },
                             modifier = Modifier.align(Alignment.End)
                         ) {
                             Text("Login / Sign Up")
@@ -148,7 +136,6 @@ fun SettingsScreen(
                     }
                 }
             } else {
-                // Tampilan jika sudah login
                 Card(modifier = Modifier.fillMaxWidth()) {
                     Row(
                         modifier = Modifier.padding(16.dp).fillMaxWidth(),

@@ -17,7 +17,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle // Import collectA
 fun AuthScreen(
     authViewModel: AuthViewModel = viewModel()
 ) {
-    // State lokal untuk input pengguna
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var isLoginMode by remember { mutableStateOf(true) }
