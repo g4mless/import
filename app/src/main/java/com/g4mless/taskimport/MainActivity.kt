@@ -81,10 +81,10 @@ fun MainAppNavigationHost() {
     }
 
     BackHandler(enabled = showAuthScreen) {
-        showAuthScreen = false // Kembali dari Auth ke Main
+        showAuthScreen = false
     }
     BackHandler(enabled = showVerifyScreen) {
-        showVerifyScreen = false // Kembali dari Verify ke Main
+        showVerifyScreen = false
     }
 
     LaunchedEffect(authResult, currentUser, isEmailVerified) {

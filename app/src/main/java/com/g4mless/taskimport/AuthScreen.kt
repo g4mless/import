@@ -15,29 +15,24 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle // Import collectA
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AuthScreen(
-    authViewModel: AuthViewModel = viewModel() // Dapatkan instance AuthViewModel
+    authViewModel: AuthViewModel = viewModel()
 ) {
     // State lokal untuk input pengguna
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var isLoginMode by remember { mutableStateOf(true) } // State untuk toggle Login/Sign Up
+    var isLoginMode by remember { mutableStateOf(true) }
 
-    // Amati state dari AuthViewModel
     val isLoading by authViewModel.isLoading.collectAsStateWithLifecycle()
     val authResult by authViewModel.authResult.collectAsStateWithLifecycle()
-    // currentUser tidak perlu diamati di sini, karena navigasi akan ditangani di level atas
 
-    // Snackbar host state untuk menampilkan error
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Tampilkan Snackbar jika ada error dari authResult
     LaunchedEffect(authResult) {
         authResult?.let { result ->
             if (!result.success && result.errorMessage != null) {
                 snackbarHostState.showSnackbar(message = result.errorMessage)
-                authViewModel.clearAuthResult() // Bersihkan hasil setelah ditampilkan
+                authViewModel.clearAuthResult()
             }
-            // Jika sukses, navigasi akan ditangani oleh observer currentUser di level atas
         }
     }
 
@@ -81,7 +76,6 @@ fun AuthScreen(
             )
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Tombol Aksi (Login atau Sign Up)
             Button(
                 onClick = {
                     if (isLoginMode) {
@@ -91,12 +85,22 @@ fun AuthScreen(
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = !isLoading && email.isNotBlank() && password.isNotBlank() // Nonaktifkan saat loading atau input kosong
+                enabled = !isLoading && email.isNotBlank() && password.isNotBlank()
             ) {
                 Text(if (isLoginMode) "Login" else "Sign Up")
             }
 
-            // Tampilkan loading indicator jika sedang proses
+            if (isLoginMode) {
+                Spacer(modifier = Modifier.height(8.dp))
+                TextButton(
+                    onClick = {
+                        authViewModel.sendPasswordResetEmail(email)
+                    },
+                    enabled = !isLoading
+                ) {
+                    Text("Forgot Password?")
+                }
+            }
             if (isLoading) {
                 Spacer(modifier = Modifier.height(8.dp))
                 CircularProgressIndicator()
@@ -104,7 +108,6 @@ fun AuthScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Tombol untuk ganti mode (Login <-> Sign Up)
             TextButton(onClick = { isLoginMode = !isLoginMode }) {
                 Text(
                     if (isLoginMode) "Don't have an account? Sign Up"

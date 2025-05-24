@@ -37,10 +37,8 @@ class AuthViewModel : ViewModel() {
         auth.addAuthStateListener { firebaseAuth ->
             val user = firebaseAuth.currentUser
             _currentUser.value = user
-            // Update status verifikasi saat user berubah
             _isEmailVerified.value = user?.isEmailVerified ?: false
         }
-        // Cek status verifikasi user saat ini saat ViewModel dibuat
         checkEmailVerificationStatus()
     }
 
@@ -107,6 +105,27 @@ class AuthViewModel : ViewModel() {
             } catch (e: Exception) {
                 e.printStackTrace()
                 _authResult.value = AuthResult(success = false, errorMessage = "Failed to send verification email: ${e.message}")
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    fun sendPasswordResetEmail(email: String) {
+        if (email.isBlank()) {
+            _authResult.value = AuthResult(success = false, errorMessage = "Please enter your email address.")
+            return
+        }
+
+        viewModelScope.launch {
+            _isLoading.value = true
+            _authResult.value = null // Reset hasil sebelumnya
+            try {
+                auth.sendPasswordResetEmail(email).await() // Tunggu hasil
+                _authResult.value = AuthResult(success = true, errorMessage = "Password reset email sent to $email. Please check your inbox.")
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _authResult.value = AuthResult(success = false, errorMessage = e.message ?: "Failed to send password reset email.")
             } finally {
                 _isLoading.value = false
             }
