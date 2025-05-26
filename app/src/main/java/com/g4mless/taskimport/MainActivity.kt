@@ -37,6 +37,8 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel 
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -162,6 +164,8 @@ fun TodoContent(
     var showAddTaskDialogState by remember { mutableStateOf(false) }
     var taskToEdit by remember { mutableStateOf<Task?>(null) }
     val showDialog = showAddTaskDialogState || taskToEdit != null
+    var showDeleteConfirmDialog by remember { mutableStateOf(false) }
+    var taskToDelete by remember { mutableStateOf<Task?>(null) }
 
     BackHandler(enabled = showCompletedTasks && !showDialog) {
         viewModel.setShowCompleted(false)
@@ -209,7 +213,10 @@ fun TodoContent(
                 items(itemsToShow, key = { task -> task.id }) { task ->
                     TaskItem(
                         task = task,
-                        onDelete = { viewModel.deleteTask(task) },
+                        onDelete = {
+                            taskToDelete = task
+                            showDeleteConfirmDialog = true
+                        },
                         onToggleComplete = { viewModel.toggleTaskCompletion(task) },
                         onEdit = { taskToEdit = task },
                         modifier = Modifier.animateItem()
@@ -231,6 +238,37 @@ fun TodoContent(
             },
             onUpdateTask = { taskId, newName, newImportance ->
                 viewModel.updateTask(taskId, newName, newImportance)
+            }
+        )
+    }
+    if (showDeleteConfirmDialog && taskToDelete != null) {
+        AlertDialog(
+            onDismissRequest = {
+                showDeleteConfirmDialog = false
+                taskToDelete = null
+            },
+            title = { Text("Confirm Delete?") },
+            text = { Text("Are you sure you want to delete the task \"${taskToDelete?.name}\"?") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        taskToDelete?.let { viewModel.deleteTask(it) }
+                        showDeleteConfirmDialog = false
+                        taskToDelete = null
+                    }
+                ) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = {
+                        showDeleteConfirmDialog = false
+                        taskToDelete = null
+                    }
+                ) {
+                    Text("Cancel")
+                }
             }
         )
     }
