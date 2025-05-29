@@ -176,7 +176,7 @@ fun TodoContent(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
-                title = { Text(if (showCompletedTasks) "Completed Tasks" else "Import") },
+                title = { Text(if (showCompletedTasks) "Completed" else "Import") },
                 actions = {
                     IconButton(onClick = { viewModel.setShowCompleted(!showCompletedTasks) }) {
                         Icon(
