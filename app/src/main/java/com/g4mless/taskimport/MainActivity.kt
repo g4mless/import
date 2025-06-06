@@ -167,6 +167,7 @@ fun TodoContent(
     var showDeleteConfirmDialog by remember { mutableStateOf(false) }
     var taskToDelete by remember { mutableStateOf<Task?>(null) }
 
+    val completedTasksCount = taskList.count { it.isCompleted }
     BackHandler(enabled = showCompletedTasks && !showDialog) {
         viewModel.setShowCompleted(false)
     }
@@ -176,7 +177,7 @@ fun TodoContent(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
-                title = { Text(if (showCompletedTasks) "Completed" else "Import") },
+                title = { Text(if (showCompletedTasks) "Completed ($completedTasksCount)" else "Import") },
                 actions = {
                     IconButton(onClick = { viewModel.setShowCompleted(!showCompletedTasks) }) {
                         Icon(
@@ -288,7 +289,7 @@ fun TaskItem(
         2 -> taskColor = Color.Green.copy(alpha = 0.3f)
         3 -> taskColor = Color.Yellow.copy(alpha = 0.3f)
         4 -> taskColor = Color.Red.copy(alpha = 0.3f)
-        5 -> taskColor = Color.Magenta.copy(alpha = 0.3f)
+        5 -> taskColor = Color(red = 0.627f, green = 0.125f, blue = 0.941f, alpha = 0.3f)
     }
 
     Box(
