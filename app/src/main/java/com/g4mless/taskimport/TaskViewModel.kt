@@ -29,7 +29,8 @@ data class Task (
     val id: Int = 0,
     val name: String = "",
     val importance: Int = 1,
-    var isCompleted: Boolean = false
+    var isCompleted: Boolean = false,
+    val createdAt: Long? = null // New field for creation timestamp, nullable for backward compatibility
 )
 
 private val TASKS_KEY = stringPreferencesKey("tasks")
@@ -246,7 +247,7 @@ class TaskViewModel(application: Application) : ViewModel() {
         viewModelScope.launch {
             val currentList = _tasks.value
             val nextId = (currentList.maxOfOrNull { it.id } ?: -1) + 1
-            val newTask = Task(nextId, name, importance, isCompleted = false)
+            val newTask = Task(nextId, name, importance, isCompleted = false, createdAt = System.currentTimeMillis()) // Set createdAt for new tasks
             val newList = (currentList + newTask).sortedByDescending { it.importance }
 
             _tasks.value = newList

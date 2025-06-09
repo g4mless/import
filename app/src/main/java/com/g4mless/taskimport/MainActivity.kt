@@ -22,6 +22,8 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.outlined.DateRange
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -43,6 +45,9 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel 
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.g4mless.taskimport.ui.theme.ImportTheme
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 
 class MainActivity : ComponentActivity() {
@@ -249,7 +254,7 @@ fun TodoContent(
                 taskToDelete = null
             },
             title = { Text("Confirm Delete?") },
-            text = { Text("Are you sure you want to delete the task \"${taskToDelete?.name}\"?") },
+            text = { Text("Delete this: \"${taskToDelete?.name}\"?") },
             confirmButton = {
                 Button(
                     onClick = {
@@ -322,7 +327,47 @@ fun TaskItem(
                     SelectionContainer {
                         Text(task.name, style = MaterialTheme.typography.bodyLarge, lineHeight = 19.sp)
                     }
-                    Text("Importance: ${task.importance}", style = MaterialTheme.typography.bodySmall)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("Importance: ${task.importance}", style = MaterialTheme.typography.bodySmall)
+                        if (task.createdAt != null) {
+                            val date = remember(task.createdAt) { Date(task.createdAt) }
+                            val formatted = remember(task.createdAt) {
+                                val now = System.currentTimeMillis()
+                                val oneDay = 24 * 60 * 60 * 1000L
+                                val todayStart = java.util.Calendar.getInstance().apply {
+                                    set(java.util.Calendar.HOUR_OF_DAY, 0)
+                                    set(java.util.Calendar.MINUTE, 0)
+                                    set(java.util.Calendar.SECOND, 0)
+                                    set(java.util.Calendar.MILLISECOND, 0)
+                                }.timeInMillis
+                                val dateStart = java.util.Calendar.getInstance().apply {
+                                    timeInMillis = task.createdAt ?: 0L
+                                    set(java.util.Calendar.HOUR_OF_DAY, 0)
+                                    set(java.util.Calendar.MINUTE, 0)
+                                    set(java.util.Calendar.SECOND, 0)
+                                    set(java.util.Calendar.MILLISECOND, 0)
+                                }.timeInMillis
+                                when (dateStart) {
+                                    todayStart -> "Today"
+                                    todayStart - oneDay -> "Yesterday"
+                                    else -> SimpleDateFormat("MMM d, yyyy", Locale.getDefault()).format(date)
+                                }
+                            }
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Edit,
+                                    contentDescription = "Created at",
+                                    tint = Color.White,
+                                    modifier = Modifier
+                                        .size(14.dp)
+                                        .alignByBaseline(),
+                                )
+                                Spacer(modifier = Modifier.width(2.dp))
+                                Text(formatted, style = MaterialTheme.typography.bodySmall, color = Color.White)
+                            }
+                        }
+                    }
                 }
                 IconButton(onClick = onEdit) {
                     Icon(Icons.Default.Edit, contentDescription = "Edit Task")
