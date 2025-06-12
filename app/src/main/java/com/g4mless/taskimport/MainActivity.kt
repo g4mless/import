@@ -22,7 +22,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.outlined.DateRange
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -328,11 +328,19 @@ fun TaskItem(
                         Text(task.name, style = MaterialTheme.typography.bodyLarge, lineHeight = 19.sp)
                     }
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("Importance: ${task.importance}", style = MaterialTheme.typography.bodySmall)
+                        Icon(
+                            imageVector = Icons.Outlined.Info,
+                            contentDescription = "Importance",
+                            tint = Color.White,
+                            modifier = Modifier
+                                .size(14.dp)
+                                .alignByBaseline(),
+                        )
+                        Spacer(modifier = Modifier.width(2.dp))
+                        Text("${task.importance}", style = MaterialTheme.typography.bodySmall)
                         if (task.createdAt != null) {
                             val date = remember(task.createdAt) { Date(task.createdAt) }
                             val formatted = remember(task.createdAt) {
-                                val now = System.currentTimeMillis()
                                 val oneDay = 24 * 60 * 60 * 1000L
                                 val todayStart = java.util.Calendar.getInstance().apply {
                                     set(java.util.Calendar.HOUR_OF_DAY, 0)
@@ -341,7 +349,7 @@ fun TaskItem(
                                     set(java.util.Calendar.MILLISECOND, 0)
                                 }.timeInMillis
                                 val dateStart = java.util.Calendar.getInstance().apply {
-                                    timeInMillis = task.createdAt ?: 0L
+                                    timeInMillis = task.createdAt
                                     set(java.util.Calendar.HOUR_OF_DAY, 0)
                                     set(java.util.Calendar.MINUTE, 0)
                                     set(java.util.Calendar.SECOND, 0)

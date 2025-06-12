@@ -23,7 +23,6 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.lang.Exception
 import com.google.firebase.firestore.ListenerRegistration
-import androidx.datastore.preferences.core.stringPreferencesKey
 
 data class Task (
     val id: Int = 0,
@@ -68,7 +67,6 @@ class TaskViewModel(application: Application) : ViewModel() {
     val operationResult: StateFlow<String?> = _operationResult.asStateFlow()
 
     private val _customImportanceColors = MutableStateFlow<Map<Int, String?>>(emptyMap())
-    val customImportanceColors: StateFlow<Map<Int, String?>> = _customImportanceColors.asStateFlow()
 
     init {
         viewModelScope.launch {
