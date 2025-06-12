@@ -41,14 +41,6 @@ val IMPORTANCE_COLOR_3_KEY = stringPreferencesKey("importance_color_3")
 val IMPORTANCE_COLOR_4_KEY = stringPreferencesKey("importance_color_4")
 val IMPORTANCE_COLOR_5_KEY = stringPreferencesKey("importance_color_5")
 
-val importanceColorKeys = mapOf(
-    1 to IMPORTANCE_COLOR_1_KEY,
-    2 to IMPORTANCE_COLOR_2_KEY,
-    3 to IMPORTANCE_COLOR_3_KEY,
-    4 to IMPORTANCE_COLOR_4_KEY,
-    5 to IMPORTANCE_COLOR_5_KEY
-)
-
 class TaskViewModel(application: Application) : ViewModel() {
 
     private val appContext = application.applicationContext
@@ -99,20 +91,6 @@ class TaskViewModel(application: Application) : ViewModel() {
                 exception.printStackTrace()
                 emit(emptyMap())
             }
-    }
-
-    fun updateImportanceColor(importance: Int, colorHex: String?) {
-        viewModelScope.launch {
-            val key = importanceColorKeys[importance] ?: return@launch
-            appContext.dataStore.edit { preferences ->
-                if (colorHex != null) {
-                    preferences[key] = colorHex
-                } else {
-                    preferences.remove(key)
-                }
-            }
-            _operationResult.value = "Color for importance $importance updated."
-        }
     }
 
     fun prepareJsonExportData(): String? {
