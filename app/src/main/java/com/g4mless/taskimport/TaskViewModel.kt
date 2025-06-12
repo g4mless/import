@@ -110,7 +110,7 @@ class TaskViewModel(application: Application) : ViewModel() {
                 val importedTasks: List<Task>? = gson.fromJson(jsonData, type)
 
                 if (importedTasks != null) {
-                    val validTasks = importedTasks.filterNotNull()
+                    val validTasks = importedTasks
                     _tasks.value = validTasks
                     saveTasksToDataStore(appContext, validTasks)
                     val collectionRef = getUserTasksCollection()
@@ -370,7 +370,7 @@ class TaskViewModel(application: Application) : ViewModel() {
             .map { prefs ->
                 val json = prefs[TASKS_KEY] ?: "[]"
                 try {
-                    gson.fromJson<List<Task>>(json, object : TypeToken<List<Task>>() {}.type)?.filterNotNull() ?: emptyList()
+                    gson.fromJson<List<Task>>(json, object : TypeToken<List<Task>>() {}.type) ?: emptyList()
                 } catch (e: Exception) {
                     e.printStackTrace()
                     emptyList<Task>()
