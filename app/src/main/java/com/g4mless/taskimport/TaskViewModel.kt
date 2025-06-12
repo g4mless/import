@@ -110,13 +110,12 @@ class TaskViewModel(application: Application) : ViewModel() {
                 val importedTasks: List<Task>? = gson.fromJson(jsonData, type)
 
                 if (importedTasks != null) {
-                    val validTasks = importedTasks
-                    _tasks.value = validTasks
-                    saveTasksToDataStore(appContext, validTasks)
+                    _tasks.value = importedTasks
+                    saveTasksToDataStore(appContext, importedTasks)
                     val collectionRef = getUserTasksCollection()
                     if (collectionRef != null) {
                         val batch = db.batch()
-                        validTasks.forEach { task ->
+                        importedTasks.forEach { task ->
                             val docRef = collectionRef.document(task.id.toString())
                             batch.set(docRef, task)
                         }
@@ -126,7 +125,8 @@ class TaskViewModel(application: Application) : ViewModel() {
                                 println("Firestore: Imported tasks synced.")
                             }
                             .addOnFailureListener { e ->
-                                _operationResult.value = "Tasks imported locally, but sync failed: ${e.message}"
+                                _operationResult.value =
+                                    "Tasks imported locally, but sync failed: ${e.message}"
                                 println("Firestore Error syncing imported tasks: ${e.message}")
                             }
 
