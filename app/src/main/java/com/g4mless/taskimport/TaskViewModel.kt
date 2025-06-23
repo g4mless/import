@@ -29,7 +29,8 @@ data class Task (
     val name: String = "",
     val importance: Int = 1,
     var isCompleted: Boolean = false,
-    val createdAt: Long? = null // New field for creation timestamp, nullable for backward compatibility
+    val createdAt: Long? = null, // New field for creation timestamp, nullable for backward compatibility
+    val dueDate: Long? = null
 )
 
 private val TASKS_KEY = stringPreferencesKey("tasks")
@@ -219,11 +220,18 @@ class TaskViewModel(application: Application) : ViewModel() {
     }
 
 
-    fun addTask(name: String, importance: Int) {
+    fun addTask(name: String, importance: Int, dueDate: Long?) {
         viewModelScope.launch {
             val currentList = _tasks.value
             val nextId = (currentList.maxOfOrNull { it.id } ?: -1) + 1
-            val newTask = Task(nextId, name, importance, isCompleted = false, createdAt = System.currentTimeMillis()) // Set createdAt for new tasks
+            val newTask = Task(
+                id = nextId,
+                name = name,
+                importance = importance,
+                isCompleted = false,
+                createdAt = System.currentTimeMillis(),
+                dueDate = dueDate
+            )
             val newList = (currentList + newTask).sortedByDescending { it.importance }
 
             _tasks.value = newList
@@ -235,13 +243,13 @@ class TaskViewModel(application: Application) : ViewModel() {
         }
     }
 
-    fun updateTask(taskId: Int, newName: String, newImportance: Int) {
+    fun updateTask(taskId: Int, newName: String, newImportance: Int, newDueDate: Long?) {
         viewModelScope.launch {
             var updatedTask: Task? = null
             val currentList = _tasks.value
             val newList = currentList.map { task ->
                 if (task.id == taskId) {
-                    updatedTask = task.copy(name = newName, importance = newImportance)
+                    updatedTask = task.copy(name = newName, importance = newImportance, dueDate = newDueDate)
                     updatedTask!!
                 } else {
                     task

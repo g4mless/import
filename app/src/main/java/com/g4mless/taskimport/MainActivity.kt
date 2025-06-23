@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -239,11 +240,11 @@ fun TodoContent(
                 showAddTaskDialogState = false
                 taskToEdit = null
             },
-            onAddTask = { name, importance ->
-                viewModel.addTask(name, importance)
+            onAddTask = { name, importance, dueDate ->
+                viewModel.addTask(name, importance, dueDate)
             },
-            onUpdateTask = { taskId, newName, newImportance ->
-                viewModel.updateTask(taskId, newName, newImportance)
+            onUpdateTask = { taskId, newName, newImportance, newDueDate ->
+                viewModel.updateTask(taskId, newName, newImportance, newDueDate)
             }
         )
     }
@@ -327,6 +328,7 @@ fun TaskItem(
                     SelectionContainer {
                         Text(task.name, style = MaterialTheme.typography.bodyLarge, lineHeight = 19.sp)
                     }
+                    Spacer(modifier = Modifier.height(3.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             imageVector = Icons.Outlined.Info,
@@ -376,6 +378,29 @@ fun TaskItem(
                             }
                         }
                     }
+                    if (task.dueDate != null) {
+                        val date = remember(task.dueDate) { Date(task.dueDate) }
+                        val formatted = remember(task.dueDate) {
+                            SimpleDateFormat("MMM d, yyyy", Locale.getDefault()).format(date)
+                        }
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.DateRange,
+                                contentDescription = "Due date",
+                                tint = Color.White,
+                                modifier = Modifier
+                                    .size(14.dp)
+                                    .alignByBaseline(),
+                            )
+                            Spacer(modifier = Modifier.width(2.dp))
+                            Text(
+                                "Due: $formatted",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color.White
+                            )
+                        }
+                    }
                 }
                 IconButton(onClick = onEdit) {
                     Icon(Icons.Default.Edit, contentDescription = "Edit Task")
@@ -394,8 +419,8 @@ fun TaskItem(
 fun AddTaskDialog(
     taskToEdit: Task? = null,
     onDismiss: () -> Unit,
-    onAddTask: (String, Int) -> Unit,
-    onUpdateTask: (taskId: Int, newName: String, newImportance: Int) -> Unit
+    onAddTask: (String, Int, Long?) -> Unit,
+    onUpdateTask: (taskId: Int, newName: String, newImportance: Int, newDueDate: Long?) -> Unit
 ) {
     val isEditMode = taskToEdit != null
     var taskName by remember { mutableStateOf(taskToEdit?.name ?: "") }
@@ -403,6 +428,9 @@ fun AddTaskDialog(
     var expanded by remember { mutableStateOf(false) }
     val importanceLevels = listOf(1, 2, 3, 4, 5)
     val isSaveEnabled = taskName.isNotBlank()
+
+    var dueDate by remember { mutableStateOf(taskToEdit?.dueDate) }
+    var showDatePicker by remember { mutableStateOf(false) }
 
     Dialog(onDismissRequest = onDismiss) {
         Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
@@ -467,6 +495,53 @@ fun AddTaskDialog(
                     }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
+
+                OutlinedButton(
+                    onClick = { showDatePicker = true },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = dueDate?.let {
+                            SimpleDateFormat("MMM d, yyyy", Locale.getDefault()).format(Date(it))
+                        } ?: "Set Due Date"
+                    )
+                }
+                if (dueDate != null) {
+                    Button(onClick = { dueDate = null }) {
+                        Text("Clear Due Date")
+                    }
+                }
+
+
+                if (showDatePicker) {
+                    val datePickerState = rememberDatePickerState(initialSelectedDateMillis = dueDate)
+                    DatePickerDialog(
+                        onDismissRequest = { showDatePicker = false },
+                        confirmButton = {
+                            TextButton(
+                                onClick = {
+                                    dueDate = datePickerState.selectedDateMillis
+                                    showDatePicker = false
+                                }
+                            ) {
+                                Text("OK")
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(
+                                onClick = {
+                                    showDatePicker = false
+                                }
+                            ) {
+                                Text("Cancel")
+                            }
+                        }
+                    ) {
+                        DatePicker(state = datePickerState)
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
@@ -477,9 +552,9 @@ fun AddTaskDialog(
                     Button(
                         onClick = {
                             if (isEditMode) {
-                                onUpdateTask(taskToEdit!!.id, taskName, selectedImportance)
+                                onUpdateTask(taskToEdit!!.id, taskName, selectedImportance, dueDate)
                             } else {
-                                onAddTask(taskName, selectedImportance)
+                                onAddTask(taskName, selectedImportance, dueDate)
                             }
                             onDismiss()
                         },
