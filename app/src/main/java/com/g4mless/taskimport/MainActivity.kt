@@ -399,7 +399,7 @@ fun AddTaskDialog(
     var taskName by remember { mutableStateOf(taskToEdit?.name ?: "") }
     var selectedImportance by remember { mutableIntStateOf(taskToEdit?.importance ?: 1) }
     var expanded by remember { mutableStateOf(false) }
-    val importanceLevels = listOf(1, 2, 3, 4, 5)
+    val importanceLevels = listOf("1 (Blue)", "2 (Green)", "3 (Yellow)", "4 (Red)", "5 (Purple)")
     val isSaveEnabled = taskName.isNotBlank()
 
     var dueDate by remember { mutableStateOf(taskToEdit?.dueDate) }
@@ -456,11 +456,11 @@ fun AddTaskDialog(
                         onDismissRequest = { expanded = false },
                         modifier = Modifier.fillMaxWidth(0.9f)
                     ) {
-                        importanceLevels.forEach { level ->
+                        importanceLevels.forEach { levelString ->
                             DropdownMenuItem(
-                                text = { Text(level.toString()) },
+                                text = { Text(levelString) },
                                 onClick = {
-                                    selectedImportance = level
+                                    selectedImportance = levelString.split(" ")[0].toInt()
                                     expanded = false
                                 }
                             )
