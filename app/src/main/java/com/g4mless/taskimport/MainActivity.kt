@@ -159,6 +159,34 @@ fun MainAppNavigationHost() {
     }
 }
 
+@Composable
+private fun formatDate(timestamp: Long?): String {
+    if (timestamp == null) return ""
+    val date = remember(timestamp) { Date(timestamp) }
+    return remember(timestamp) {
+        val oneDay = 24 * 60 * 60 * 1000L
+        val todayStart = java.util.Calendar.getInstance().apply {
+            set(java.util.Calendar.HOUR_OF_DAY, 0)
+            set(java.util.Calendar.MINUTE, 0)
+            set(java.util.Calendar.SECOND, 0)
+            set(java.util.Calendar.MILLISECOND, 0)
+        }.timeInMillis
+        val dateStart = java.util.Calendar.getInstance().apply {
+            timeInMillis = timestamp
+            set(java.util.Calendar.HOUR_OF_DAY, 0)
+            set(java.util.Calendar.MINUTE, 0)
+            set(java.util.Calendar.SECOND, 0)
+            set(java.util.Calendar.MILLISECOND, 0)
+        }.timeInMillis
+        when (dateStart) {
+            todayStart -> "Today"
+            todayStart - oneDay -> "Yesterday"
+            else -> SimpleDateFormat("MMM d, yyyy", Locale.getDefault()).format(date)
+        }
+    }
+}
+
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun TodoContent(
@@ -291,11 +319,11 @@ fun TaskItem(
 ) {
     var taskColor: Color = Color.Unspecified
     when (task.importance) {
-        1 -> taskColor = Color.Blue.copy(alpha = 0.3f)
-        2 -> taskColor = Color.Green.copy(alpha = 0.3f)
-        3 -> taskColor = Color.Yellow.copy(alpha = 0.3f)
-        4 -> taskColor = Color.Red.copy(alpha = 0.3f)
-        5 -> taskColor = Color(red = 0.627f, green = 0.125f, blue = 0.941f, alpha = 0.3f)
+        1 -> taskColor = Color(red = 0.153f, green = 0.298f, blue = 0.878f, alpha = 0.5f)
+        2 -> taskColor = Color(red = 0.059f, green = 0.51f, blue = 0.318f, alpha = 0.5f)
+        3 -> taskColor = Color(red = 0.835f, green = 0.714f, blue = 0.039f, alpha = 0.5f)
+        4 -> taskColor = Color(red = 1.0f, green = 0.173f, blue = 0.173f, alpha = 0.5f)
+        5 -> taskColor = Color(red = 0.627f, green = 0.125f, blue = 0.941f, alpha = 0.5f)
     }
 
     Box(
@@ -314,7 +342,7 @@ fun TaskItem(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .defaultMinSize(minHeight = 90.dp)
+                    .defaultMinSize(minHeight = 80.dp)
                     .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -328,62 +356,9 @@ fun TaskItem(
                     SelectionContainer {
                         Text(task.name, style = MaterialTheme.typography.bodyLarge, lineHeight = 19.sp)
                     }
-                    Spacer(modifier = Modifier.height(3.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Outlined.Info,
-                            contentDescription = "Importance",
-                            tint = Color.White,
-                            modifier = Modifier
-                                .size(14.dp)
-                                .alignByBaseline(),
-                        )
-                        Spacer(modifier = Modifier.width(2.dp))
-                        Text("${task.importance}", style = MaterialTheme.typography.bodySmall)
-                        if (task.createdAt != null) {
-                            val date = remember(task.createdAt) { Date(task.createdAt) }
-                            val formatted = remember(task.createdAt) {
-                                val oneDay = 24 * 60 * 60 * 1000L
-                                val todayStart = java.util.Calendar.getInstance().apply {
-                                    set(java.util.Calendar.HOUR_OF_DAY, 0)
-                                    set(java.util.Calendar.MINUTE, 0)
-                                    set(java.util.Calendar.SECOND, 0)
-                                    set(java.util.Calendar.MILLISECOND, 0)
-                                }.timeInMillis
-                                val dateStart = java.util.Calendar.getInstance().apply {
-                                    timeInMillis = task.createdAt
-                                    set(java.util.Calendar.HOUR_OF_DAY, 0)
-                                    set(java.util.Calendar.MINUTE, 0)
-                                    set(java.util.Calendar.SECOND, 0)
-                                    set(java.util.Calendar.MILLISECOND, 0)
-                                }.timeInMillis
-                                when (dateStart) {
-                                    todayStart -> "Today"
-                                    todayStart - oneDay -> "Yesterday"
-                                    else -> SimpleDateFormat("MMM d, yyyy", Locale.getDefault()).format(date)
-                                }
-                            }
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = Icons.Outlined.Edit,
-                                    contentDescription = "Created at",
-                                    tint = Color.White,
-                                    modifier = Modifier
-                                        .size(14.dp)
-                                        .alignByBaseline(),
-                                )
-                                Spacer(modifier = Modifier.width(2.dp))
-                                Text(formatted, style = MaterialTheme.typography.bodySmall, color = Color.White)
-                            }
-                        }
-                    }
                     if (task.dueDate != null) {
-                        val date = remember(task.dueDate) { Date(task.dueDate) }
-                        val formatted = remember(task.dueDate) {
-                            SimpleDateFormat("MMM d, yyyy", Locale.getDefault()).format(date)
-                        }
-                        Spacer(modifier = Modifier.height(2.dp))
+                        Spacer(modifier = Modifier.height(3.dp))
+                        val formatted = formatDate(task.dueDate)
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
                                 imageVector = Icons.Default.DateRange,
