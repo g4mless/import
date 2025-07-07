@@ -29,7 +29,6 @@ data class Task (
     val name: String = "",
     val importance: Int = 1,
     var isCompleted: Boolean = false,
-    val createdAt: Long? = null, // New field for creation timestamp, nullable for backward compatibility
     val dueDate: Long? = null
 )
 
@@ -229,7 +228,6 @@ class TaskViewModel(application: Application) : ViewModel() {
                 name = name,
                 importance = importance,
                 isCompleted = false,
-                createdAt = System.currentTimeMillis(),
                 dueDate = dueDate
             )
             val newList = (currentList + newTask).sortedByDescending { it.importance }
