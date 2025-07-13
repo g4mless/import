@@ -361,7 +361,6 @@ fun TaskItem(
                             Icon(
                                 imageVector = Icons.Default.DateRange,
                                 contentDescription = "Due date",
-                                tint = Color.White,
                                 modifier = Modifier
                                     .size(14.dp)
                                     .alignByBaseline(),
@@ -370,7 +369,6 @@ fun TaskItem(
                             Text(
                                 "Due: $formatted",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = Color.White
                             )
                         }
                     }
