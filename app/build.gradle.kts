@@ -8,14 +8,14 @@ plugins {
 
 android {
     namespace = "com.g4mless.taskimport"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.g4mless.taskimport"
         minSdk = 24
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 2
-        versionName = "1.3"
+        versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
