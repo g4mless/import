@@ -85,8 +85,8 @@ service cloud.firestore {
 
                         match /tasks/{taskId} {
                                 allow read, write: if request.auth != null
-                                                                         && request.auth.uid == userId
-                                                                         && request.auth.token.email_verified == true;
+                                                    && request.auth.uid == userId
+                                                    && request.auth.token.email_verified == true;
                         }
                 }
         }
