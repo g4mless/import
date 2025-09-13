@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.*
@@ -37,6 +38,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -333,9 +335,7 @@ fun TaskItem(
                 .widthIn(max = 600.dp)
                 .fillMaxWidth()
                 .padding(vertical = 4.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = if (taskColor != Color.Unspecified) taskColor else CardDefaults.cardColors().containerColor
-            )
+            colors = CardDefaults.cardColors(containerColor = taskColor) // Use the dynamic taskColor for the whole background
         ) {
             Row(
                 modifier = Modifier
@@ -367,17 +367,38 @@ fun TaskItem(
                             )
                             Spacer(modifier = Modifier.width(2.dp))
                             Text(
-                                "Due: $formatted",
+                                formatted,
                                 style = MaterialTheme.typography.bodySmall,
                             )
                         }
                     }
                 }
-                IconButton(onClick = onEdit) {
-                    Icon(Icons.Default.Edit, contentDescription = "Edit Task")
-                }
-                IconButton(onClick = onDelete) {
-                    Icon(Icons.Default.Delete, contentDescription = "Delete Task")
+                Box {
+                    var showMenu by remember { mutableStateOf(false) }
+                    IconButton(onClick = {
+                        showMenu = true
+                    }) {
+                        Icon(Icons.Default.MoreVert, contentDescription = "More options")
+                    }
+                    DropdownMenu(
+                        expanded = showMenu,
+                        onDismissRequest = { showMenu = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("Edit") },
+                            onClick = {
+                                onEdit()
+                                showMenu = false
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Delete") },
+                            onClick = {
+                                onDelete() // You might want to show your confirmation dialog here
+                                showMenu = false
+                            }
+                        )
+                    }
                 }
             }
         }
