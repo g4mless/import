@@ -493,7 +493,7 @@ fun AddTaskDialog(
                     Button(
                         onClick = {
                             if (isEditMode) {
-                                onUpdateTask(taskToEdit!!.id, taskName, selectedImportance, dueDate)
+                                onUpdateTask(taskToEdit.id, taskName, selectedImportance, dueDate)
                             } else {
                                 onAddTask(taskName, selectedImportance, dueDate)
                             }

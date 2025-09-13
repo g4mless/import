@@ -1,6 +1,5 @@
 package com.g4mless.taskimport
 
-import android.content.Context
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -10,13 +9,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack // Ikon panah kembali
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-// import androidx.lifecycle.viewmodel.compose.viewModel // No longer needed for AuthViewModel
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -37,7 +33,7 @@ fun SettingsScreen(
     var showClearCompletedDialog by remember { mutableStateOf(false) }
     var showClearAllDialog by remember { mutableStateOf(false) }
     var showImportConfirmDialog by remember { mutableStateOf<Uri?>(null) }
-    var importFileType by remember { mutableStateOf("") } // Keep for JSON import logic
+    //var importFileType by remember { mutableStateOf("") } // Keep for JSON import logic
     val scrollState = rememberScrollState()
 
     // Removed currentUser and authViewModel related state
@@ -89,7 +85,7 @@ fun SettingsScreen(
             uri?.let { sourceUri ->
                 val type = context.contentResolver.getType(sourceUri)
                 if (type == "application/json" || sourceUri.path?.endsWith(".json", ignoreCase = true) == true) {
-                    importFileType = "json" // Used for the import confirmation dialog logic
+                    //importFileType = "json"
                     showImportConfirmDialog = sourceUri
                 } else {
                     scope.launch{ snackbarHostState.showSnackbar("Unsupported file type (JSON only).") }
