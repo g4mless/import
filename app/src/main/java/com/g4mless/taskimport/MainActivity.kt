@@ -18,8 +18,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.automirrored.filled.List
@@ -38,12 +36,11 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel 
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.g4mless.taskimport.ui.theme.ImportTheme
 import java.text.SimpleDateFormat
@@ -74,86 +71,38 @@ fun MainAppNavigationHost() {
     val application = LocalContext.current.applicationContext as Application
     val factory = TaskViewModelFactory(application)
     val taskViewModel: TaskViewModel = viewModel(factory = factory)
-    var showAuthScreen by remember { mutableStateOf(false) }
-    var showVerifyScreen by remember { mutableStateOf(false) }
-
-    val authViewModel: AuthViewModel = viewModel()
-    val currentUser by authViewModel.currentUser.collectAsStateWithLifecycle()
-    val isEmailVerified by authViewModel.isEmailVerified.collectAsStateWithLifecycle()
-    val authResult by authViewModel.authResult.collectAsStateWithLifecycle()
-
     var showSettingsScreen by remember { mutableStateOf(false) }
 
     BackHandler(enabled = showSettingsScreen) {
         showSettingsScreen = false
     }
 
-    BackHandler(enabled = showAuthScreen) {
-        showAuthScreen = false
-    }
-    BackHandler(enabled = showVerifyScreen) {
-        showVerifyScreen = false
-    }
+    // taskViewModel.setupFirestoreListenerBasedOnAuth() // Removed as it likely depends on auth
 
-    LaunchedEffect(authResult, currentUser, isEmailVerified) {
-        authResult?.let { result ->
-            if (result.success && currentUser != null) {
-                if (currentUser?.isEmailVerified == true) {
-                    showAuthScreen = false
-                    showVerifyScreen = false
-                    authViewModel.clearAuthResult()
-                } else {
-                    showAuthScreen = false
-                    showVerifyScreen = true
-                    authViewModel.clearAuthResult()
-                }
-            }
-        }
-
-        if (showVerifyScreen && isEmailVerified) {
-            showVerifyScreen = false
-        }
-    }
-    LaunchedEffect(currentUser) {
-        taskViewModel.setupFirestoreListenerBasedOnAuth()
-    }
-
-    when {
-        showAuthScreen -> {
-            AuthScreen(authViewModel = authViewModel)
-        }
-        showVerifyScreen -> {
-            EmailVerificationScreen(authViewModel = authViewModel)
-        }
-        else -> {
-
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background)
-            ) {
-                AnimatedContent(
-                    targetState = showSettingsScreen,
-                    transitionSpec = {
-                        fadeIn(animationSpec = tween(300)) togetherWith
-                                fadeOut(animationSpec = tween(300))
-                    },
-                    label = "Main App Navigation"
-                ) { isSettingsVisibleTarget ->
-                    if (isSettingsVisibleTarget) {
-                        SettingsScreen(
-                            taskViewModel = taskViewModel,
-                            authViewModel = authViewModel,
-                            onNavigateBack = { showSettingsScreen = false },
-                            onNavigateToAuth = { showAuthScreen = true }
-                        )
-                    } else {
-                        TodoContent(
-                            viewModel = taskViewModel,
-                            onNavigateToSettings = { showSettingsScreen = true }
-                        )
-                    }
-                }
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
+        AnimatedContent(
+            targetState = showSettingsScreen,
+            transitionSpec = {
+                fadeIn(animationSpec = tween(300)) togetherWith
+                        fadeOut(animationSpec = tween(300))
+            },
+            label = "Main App Navigation"
+        ) { isSettingsVisibleTarget ->
+            if (isSettingsVisibleTarget) {
+                SettingsScreen(
+                    taskViewModel = taskViewModel,
+                    onNavigateBack = { showSettingsScreen = false }
+                    // Removed authViewModel and onNavigateToAuth
+                )
+            } else {
+                TodoContent(
+                    viewModel = taskViewModel,
+                    onNavigateToSettings = { showSettingsScreen = true }
+                )
             }
         }
     }
@@ -341,7 +290,7 @@ fun TaskItem(
                 modifier = Modifier
                     .fillMaxWidth()
                     .defaultMinSize(minHeight = 80.dp)
-                    .padding(16.dp),
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -355,7 +304,7 @@ fun TaskItem(
                         Text(task.name, style = MaterialTheme.typography.bodyLarge, lineHeight = 19.sp)
                     }
                     if (task.dueDate != null) {
-                        Spacer(modifier = Modifier.height(3.dp))
+                        Spacer(modifier = Modifier.height(2.dp))
                         val formatted = formatDate(task.dueDate)
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(

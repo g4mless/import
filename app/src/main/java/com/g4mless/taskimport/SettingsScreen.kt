@@ -15,7 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel // Import viewModel
+// import androidx.lifecycle.viewmodel.compose.viewModel // No longer needed for AuthViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -31,17 +31,16 @@ import androidx.compose.foundation.verticalScroll
 @Composable
 fun SettingsScreen(
     taskViewModel: TaskViewModel,
-    authViewModel: AuthViewModel = viewModel(),
-    onNavigateBack: () -> Unit,
-    onNavigateToAuth: () -> Unit
+    onNavigateBack: () -> Unit
+    // Removed AuthViewModel and onNavigateToAuth
 ) {
     var showClearCompletedDialog by remember { mutableStateOf(false) }
     var showClearAllDialog by remember { mutableStateOf(false) }
     var showImportConfirmDialog by remember { mutableStateOf<Uri?>(null) }
-    var importFileType by remember { mutableStateOf("") }
+    var importFileType by remember { mutableStateOf("") } // Keep for JSON import logic
     val scrollState = rememberScrollState()
 
-    val currentUser by authViewModel.currentUser.collectAsStateWithLifecycle()
+    // Removed currentUser and authViewModel related state
 
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -90,7 +89,7 @@ fun SettingsScreen(
             uri?.let { sourceUri ->
                 val type = context.contentResolver.getType(sourceUri)
                 if (type == "application/json" || sourceUri.path?.endsWith(".json", ignoreCase = true) == true) {
-                    importFileType = "json"
+                    importFileType = "json" // Used for the import confirmation dialog logic
                     showImportConfirmDialog = sourceUri
                 } else {
                     scope.launch{ snackbarHostState.showSnackbar("Unsupported file type (JSON only).") }
@@ -119,47 +118,8 @@ fun SettingsScreen(
                 .fillMaxSize()
                 .verticalScroll(scrollState)
         ) {
-            Text("Account", style = MaterialTheme.typography.titleMedium)
-            Spacer(modifier = Modifier.height(8.dp))
-
-            if (currentUser == null) {
-                Card(modifier = Modifier.fillMaxWidth()) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text("Login or Sign Up to sync your tasks across devices.", style = MaterialTheme.typography.bodyMedium)
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Button(
-                            onClick = { onNavigateToAuth() },
-                            modifier = Modifier.align(Alignment.End)
-                        ) {
-                            Text("Login / Sign Up")
-                        }
-                    }
-                }
-            } else {
-                Card(modifier = Modifier.fillMaxWidth()) {
-                    Row(
-                        modifier = Modifier.padding(16.dp).fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
-                            Text("Logged in as:", style = MaterialTheme.typography.labelSmall)
-                            Text(currentUser?.email ?: "Unknown Email", style = MaterialTheme.typography.bodyMedium)
-                            if (currentUser?.isEmailVerified == false) {
-                                Text(" (Email not verified)", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
-                            }
-                        }
-                        Button(
-                            onClick = { authViewModel.signOut() },
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
-                        ) {
-                            Text("Logout")
-                        }
-                    }
-                }
-            }
-
-            HorizontalDivider(modifier = Modifier.padding(vertical = 24.dp))
+            // Removed Account section as it was Firebase dependent
+            // HorizontalDivider(modifier = Modifier.padding(vertical = 24.dp)) // Also remove divider if Account section was the only one above
 
             Text("Data Management", style = MaterialTheme.typography.titleMedium)
             Spacer(modifier = Modifier.height(16.dp))
@@ -183,7 +143,7 @@ fun SettingsScreen(
                 onClick = {
                     val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
                     val fileName = "tasks_export_$timeStamp.json"
-                    createJsonFileLauncher.launch(fileName) // Panggil launcher JSON
+                    createJsonFileLauncher.launch(fileName)
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -192,18 +152,15 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.height(8.dp))
             Button(
                 onClick = {
-                    openFileLauncher.launch(arrayOf("application/json")) // Hanya minta file JSON
+                    openFileLauncher.launch(arrayOf("application/json"))
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Import Tasks from JSON")
             }
-            // --- Akhir Bagian Export / Import ---
         }
     }
 
-    // --- Dialog Konfirmasi ---
-    // Dialog Clear Completed
     if (showClearCompletedDialog) {
         AlertDialog(
             onDismissRequest = { showClearCompletedDialog = false },
@@ -221,7 +178,6 @@ fun SettingsScreen(
         )
     }
 
-    // Dialog Clear All
     if (showClearAllDialog) {
         AlertDialog(
             onDismissRequest = { showClearAllDialog = false },
@@ -242,7 +198,6 @@ fun SettingsScreen(
         )
     }
 
-    // Dialog Konfirmasi IMPORT JSON
     showImportConfirmDialog?.let { uri ->
         AlertDialog(
             onDismissRequest = { showImportConfirmDialog = null },
@@ -260,7 +215,6 @@ fun SettingsScreen(
                                         }
                                     } ?: throw Exception("Failed to open input stream for URI: $uri")
                                 }
-                                // Panggil import JSON
                                 taskViewModel.importTasksFromJson(content)
                             } catch (e: Exception) {
                                 e.printStackTrace()

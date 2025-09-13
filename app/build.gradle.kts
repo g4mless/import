@@ -3,7 +3,6 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("org.jetbrains.kotlin.plugin.serialization") version libs.versions.kotlin.get()
-    id("com.google.gms.google-services")
 }
 
 android {
@@ -54,9 +53,6 @@ kotlin {
 }
 
 dependencies {
-    implementation(libs.firebase.auth)
-    implementation(libs.firebase.firestore)
-    implementation(platform(libs.firebase.bom))
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.gson)
